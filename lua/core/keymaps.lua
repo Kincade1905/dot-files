@@ -12,9 +12,6 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 ---------------------Normal mode maps -----------------------------------
---Save key strokes while entering command mode
-keymap({ "n", "x" }, ";", ":")
-
 ----- Toggle spell checking
 keymap("n", "<F11>", "<cmd>set spell!<cr>", { desc = "toggle spell" })
 keymap("i", "<F11>", "<c-o><cmd>set spell!<cr>", { desc = "toggle spell" })
@@ -30,38 +27,36 @@ keymap("n", "<leader>p", "m`o<ESC>p``", { desc = "paste below current line" })
 keymap("n", "<leader>P", "m`O<ESC>p``", { desc = "paste above current line" })
 
 --Create split
-keymap("n", "<leader>sv", ":split<CR>", { desc = "[S]plit [V]ertical " })
-keymap("n", "<leader>sh", ":vsplit<CR>", { desc = "[S]plit [H]orizontal" })
+keymap("n", "<leader>sv", ":vsplit<CR>", { desc = "[S]plit [V]ertical " })
+keymap("n", "<leader>sH", ":split<CR>", { desc = "[S]plit [H]orizontal" })
 
 --Windows navigation
 keymap("n", "<C-h>", "<C-w>h", { desc = "switch window left" })
-keymap("n", "<C-j>", "<C-w>j", { desc = "switch window right" })
-keymap("n", "<C-k>", "<C-w>k", { desc = "switch window up" })
-keymap("n", "<C-l>", "<C-w>l", { desc = "switch window down" })
---keymap("n", "<C-R>", "<C-w>r" , { desc = "Rotate windows position" })
+keymap("n", "<C-l>", "<C-w>l", { desc = "switch window right" })
+keymap("n", "<C-u>", "<C-w>k", { desc = "switch window up" })
+keymap("n", "<C-d>", "<C-w>j", { desc = "switch window down" })
+keymap("n", "<C-w>", "<C-w>r", { desc = "Rotate windows position" })
 
 -- Resize with arrows
 keymap("n", "<C-Up>", ":resize +2<CR>", opts)
 keymap("n", "<C-Down>", ":resize -2<CR>", opts)
-keymap("n", "<C-Left>", ":vertical resize +2<CR>", opts)
-keymap("n", "<C-Right>", ":vertical resize -2<CR>", opts)
+keymap("n", "<C-Left>", ":vertical resize -2<CR>", opts)
+keymap("n", "<C-Right>", ":vertical resize +2<CR>", opts)
 keymap("n", "<leader>es", "<C-w>=", { desc = "[E]qual [S]plit" })
 
 -- Navigate buffers
 keymap("n", "<leader>bn", ":bnext<CR>", { desc = "[B]uffer [N]ext" })
 keymap("n", "<leader>bp", ":bprevious<CR>", { desc = "[B]uffer [P]revious" })
+-- Delete a buffer, without closing the window, see https://stackoverflow.com/q/4465095/6064933
+keymap("n", "<leader>bd", "<cmd>bprevious <bar> bdelete #<cr>", addOption("delete current buffer"))
 
 -- Saves the file if modified and quit
-keymap("n", "<leader>q", "<cmd>x<cr>", addOption("quit current window"))
-
--- Fast saving with <leader> and w
-keymap("n", "<leader>w", "<cmd>w<cr>", addOption("Save current buffer"))
-
+keymap("n", "<leader>q", "<cmd>confirm q<CR>", addOption("quit current window"))
 -- Quit all opened buffers
 keymap("n", "<leader>Q", "<cmd>qa!<cr>", addOption("quit nvim"))
 
--- Delete a buffer, without closing the window, see https://stackoverflow.com/q/4465095/6064933
-keymap("n", "<leader>bd", "<cmd>bprevious <bar> bdelete #<cr>", addOption("delete current buffer"))
+-- Fast saving with <leader> and w
+keymap("n", "<leader>w", "<cmd>w<cr>", addOption("Save current buffer"))
 
 --central cursor on find or vertical navigation
 keymap("n", "n", "nzz", opts)

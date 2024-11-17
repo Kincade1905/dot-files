@@ -14,3 +14,4 @@ crash.log
 
 # For built boxes
 *.box
+lazy-lock.json

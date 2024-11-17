@@ -8,7 +8,7 @@ local function map(keymap, mapTarget, buffer, desc, mode)
 end
 
 Module.setup = {
-	lsp = function(buffer, client)
+	lsp = function(buffer)
 		local lsp = vim.lsp.buf
 		local diagnostic = vim.diagnostic
 
@@ -20,6 +20,7 @@ Module.setup = {
 		map("gk", lsp.signature_help, buffer, "[G]et Signature help (LSP)")
 
 		map("ga", lsp.code_action, buffer, "[G]et  [C]ode action")
+		map("gl", "<cmd>lua vim.diagnostic.open_float()<CR>", buffer, "Open Float diagnostic")
 
 		map("<leader>D", require("telescope.builtin").lsp_type_definitions, buffer, "List Type [D]efinition (LSP)")
 		map("<leader>ds", require("telescope.builtin").lsp_document_symbols, buffer, "[D]ocument [S]ymbols (LSP)")
@@ -38,26 +39,24 @@ Module.setup = {
 		end, buffer, "list workspace folder")
 
 		--formatting
-		--[[
-        map('<leader>f',
-            function()
-                local client_names = vim.tbl_map(
-                    function(client) return client.name end,
-                    vim.lsp.get_clients({ bufnr = 0 })
-                )
-                vim.ui.select(client_names, { prompt = 'Select al client to format current buffer:' }, function(client_name)
-                    if vim.tbl_contains(client_names, client_name) then
-                        local choice = client_name
-                        require 'conform'.format({ filter = function(client) return client.name == choice end })
-                    else
-                        vim.notify('invaid client name', vim.log.levels.INFO)
-                    end
-                end)
-            end,
-            buffer,
-            "[F]ormat choose (lsp)")
+		map("<leader>f", function()
+			local client_names = vim.tbl_map(function(client)
+				return client.name
+			end, vim.lsp.get_clients({ bufnr = 0 }))
+			vim.ui.select(client_names, { prompt = "Select al client to format current buffer:" }, function(client_name)
+				if vim.tbl_contains(client_names, client_name) then
+					local choice = client_name
+					require("conform").format({
+						filter = function(client)
+							return client.name == choice
+						end,
+					})
+				else
+					vim.notify("invaid client name", vim.log.levels.INFO)
+				end
+			end)
+		end, buffer, "[F]ormat choose (lsp)")
 
-        --]]
 		map("<leader>rn", lsp.rename, buffer, "[R]e[n]ame")
 
 		map("K", lsp.hover, buffer, "Hover")
@@ -65,52 +64,42 @@ Module.setup = {
 		map("[d", diagnostic.goto_prev, buffer, "previous diagnostic")
 		map("]d", diagnostic.goto_next, buffer, "next diagnostic")
 
-		--[[
-        -- this puts diagnostics from opened files to quickfix
-            map("<space>qw", diagnostic.setqflist, buffer, "put window diagnostics to qf" )
-            -- this puts diagnostics from current buffer to quickfix
-            map("<space>qb", function() set_qflist(bufnr) end,"put buffer diagnostics to qf" )
-            map("<space>ca", vim.lsp.buf.code_action,"LSP code action" )
-            map("<space>wa", vim.lsp.buf.add_workspace_folder,"add workspace folder" )
-            map("<space>wr", vim.lsp.buf.remove_workspace_folder,"remove workspace folder" )
-            map("<space>wl", function()
-                vim.print(vim.lsp.buf.list_workspace_folders())
-            end, "list workspace folder" )
+		-- this puts diagnostics from opened files to quickfix
+		-- map("<space>qw", diagnostic.setqflist, buffer, "put window diagnostics to qf")
+		-- this puts diagnostics from current buffer to quickfix
+		-- map("<space>qb", function()
+		-- 	set_qflist(buffer)
+		-- end, "put buffer diagnostics to qf")
+		--
+		if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
+			local highlight_augroup = vim.api.nvim_create_augroup("kickstart-lsp-highlight", { clear = false })
+			vim.api.nvim_create_autocmd({ "CursorHold", "CursorHoldI" }, {
+				buffer = event.buf,
+				group = highlight_augroup,
+				callback = vim.lsp.buf.document_highlight,
+			})
 
-            -- Set some key bindings conditional on server capabilities
-            if client.server_capabilities.documentFormattingProvider then
-                map("n", "<space>f", vim.lsp.buf.format, { desc = "[F]ormat code" })
-            end
+			vim.api.nvim_create_autocmd({ "CursorMoved", "CursorMovedI" }, {
+				buffer = event.buf,
+				group = highlight_augroup,
+				callback = vim.lsp.buf.clear_references,
+			})
 
-            if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_documentHighlight) then
-                local highlight_augroup = vim.api.nvim_create_augroup('kickstart-lsp-highlight', { clear = false })
-                vim.api.nvim_create_autocmd({ 'CursorHold', 'CursorHoldI' }, {
-                    buffer = event.buf,
-                    group = highlight_augroup,
-                    callback = vim.lsp.buf.document_highlight,
-                })
+			vim.api.nvim_create_autocmd("LspDetach", {
+				group = vim.api.nvim_create_augroup("kickstart-lsp-detach", { clear = true }),
+				callback = function(event2)
+					vim.lsp.buf.clear_references()
+					vim.api.nvim_clear_autocmds({ group = "kickstart-lsp-highlight", buffer = event2.buf })
+				end,
+			})
+		end
 
-                vim.api.nvim_create_autocmd({ 'CursorMoved', 'CursorMovedI' }, {
-                    buffer = event.buf,
-                    group = highlight_augroup,
-                    callback = vim.lsp.buf.clear_references,
-                })
-
-                vim.api.nvim_create_autocmd('LspDetach', {
-                    group = vim.api.nvim_create_augroup('kickstart-lsp-detach', { clear = true }),
-                    callback = function(event2)
-                        vim.lsp.buf.clear_references()
-                        vim.api.nvim_clear_autocmds { group = 'kickstart-lsp-highlight', buffer = event2.buf }
-                    end,
-                })
-            end
-
-            if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
-                map('<leader>th', function()
-                    vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
-                end, '[T]oggle Inlay [H]ints')
-            end
-    --]]
+		if client and client.supports_method(vim.lsp.protocol.Methods.textDocument_inlayHint) then
+			map("<leader>th", function()
+				vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled({ bufnr = event.buf }))
+			end, "[T]oggle Inlay [H]ints")
+		end
+		--]]
 	end,
 }
 --Random plugings mappings here.
