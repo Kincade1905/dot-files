@@ -3,7 +3,7 @@ require("core.options")
 require("core.keymaps")
 
 spec("plugins.telescope")
-spec("plugins.telescope-frecency")
+spec("plugins.telescope-frecency.nvim")
 
 spec("plugins.treesitter")
 spec("plugins.treeSitterTextObject")

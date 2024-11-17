@@ -4,6 +4,11 @@ local Module = {
 
 function Module.config()
 	require("telescope").load_extension("frecency")
-	vim.keymap.set("n", "<leader>sF", "<cmd>Telescope frecency <CR>", { desc = "[S]earch frequently used file" })
+	vim.keymap.set(
+		"n",
+		"<leader>sff",
+		"<cmd>Telescope frecency workspace=CWD <CR>",
+		{ desc = "[S]earch frequently used file" }
+	)
 end
 return Module

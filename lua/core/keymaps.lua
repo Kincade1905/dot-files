@@ -12,6 +12,12 @@ vim.g.mapleader = " "
 vim.g.maplocalleader = " "
 
 ---------------------Normal mode maps -----------------------------------
+-------------Tabs--------------------
+keymap("n", "<leader>tN", "<cmd>tabnew<CR>", { desc = "Open new tab" })
+keymap("n", "<leader>tc", "<cmd>tabclose<CR>", { desc = "Close current tab" })
+keymap("n", "<leader>tn", "<cmd>tabn<CR>", { desc = "Navigate to [N]ext new tab" })
+keymap("n", "<leader>tp", "<cmd>tabp<CR>", { desc = "Navigate to [P]revious new tab" })
+
 ----- Toggle spell checking
 keymap("n", "<F11>", "<cmd>set spell!<cr>", { desc = "toggle spell" })
 keymap("i", "<F11>", "<c-o><cmd>set spell!<cr>", { desc = "toggle spell" })

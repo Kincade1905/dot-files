@@ -17,6 +17,8 @@ local Module = {
 
 function Module.config()
 	local icons = require("helpers.icons")
+	local builtin = require("telescope.builtin")
+	local actions = require("telescope.actions")
 
 	require("telescope").setup({
 		defaults = {
@@ -35,8 +37,8 @@ function Module.config()
 			},
 			mappings = {
 				n = {
-					["d"] = require("telescope.actions").delete_buffer + actions.move_to_top,
-					["q"] = require("telescope.actions").close,
+					["d"] = actions.delete_buffer + actions.move_to_top,
+					["q"] = actions.close,
 				},
 			},
 		},
@@ -44,8 +46,6 @@ function Module.config()
 
 	pcall(require("telescope").load_extension, "fzf")
 	pcall(require("telescope").load_extension, "ui-select")
-
-	local builtin = require("telescope.builtin")
 
 	vim.keymap.set("n", "<leader>sh", builtin.help_tags, { desc = "[S]earch [H]elp" })
 	vim.keymap.set("n", "<leader>sk", builtin.keymaps, { desc = "[S]earch [K]eymaps" })
